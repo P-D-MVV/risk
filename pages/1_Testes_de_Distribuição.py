@@ -3,7 +3,7 @@ import pandas as pd
 import os 
 import pprint
 
-from algorithms.functions import *
+from functions import *
 
 st.set_page_config(page_title="Testes de Distribuição", layout="wide")
 

@@ -6,7 +6,7 @@ import streamlit_vertical_slider as svs
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from algorithms.functions import *
+from functions import *
 
 if "valor_agrupamento_dados" not in st.session_state:
     st.session_state.valor_agrupamento_dados = 15

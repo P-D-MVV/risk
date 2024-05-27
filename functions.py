@@ -16,7 +16,7 @@ def calcular_p80(dados):
 
     return p80_inf, p80_sup
 
-def simular_monte_carlo(dados, meta, n_simulacoes, n_dias):
+def simular_monte_carlo(dados, meta, n_simulacoes, n_dias, tipo_calculo):
     resultados = []
     
     for _ in range(n_simulacoes):
@@ -27,6 +27,9 @@ def simular_monte_carlo(dados, meta, n_simulacoes, n_dias):
             producao_dia_decimal = producao_dia_decimal * decimal
             producao_simulada = producao_simulada.tolist() + producao_dia_decimal.tolist()
         total = np.sum(producao_simulada)
+
+        if tipo_calculo=="Média":
+            total = total/n_dias
 
         resultados.append(total)
 
@@ -44,7 +47,7 @@ def simular_monte_carlo(dados, meta, n_simulacoes, n_dias):
     # plt.title('Distribuição da Produção Total')
     # plt.legend()
     # plt.show()
-
+ 
     return media, mediana, desvio, p80_inf, p80_sup, prob_meta, resultados
 
 def definir_melhor_distribuicao(dados):
@@ -107,8 +110,8 @@ def identificar_indices_consecutivos_abaixo_media(dados, media, tamanho_conjunto
 
 def identificar_pontos_abaixo(dados, media):
     p_abaixo_media = []
-
-    for i in range(0, len(dados) - 6):
+    # print(dados)
+    for i in range(dados.index[0], len(dados) - 6):
         if dados[i] < media:
             flag = True
             for dado in dados[i:i+7]:
@@ -122,6 +125,24 @@ def identificar_pontos_abaixo(dados, media):
 
 
     return p_abaixo_media
+
+def identificar_pontos_acima(dados, media):
+    p_acima_media = []
+    # print(dados)
+    for i in range(dados.index[0], len(dados) - 6):
+        if dados[i] > media:
+            flag = True
+            for dado in dados[i:i+7]:
+                if dado<=media: flag=False
+            if flag==True: 
+                for j in range(i, len(dados)):
+                    if dados[j]>media:
+                        p_acima_media.append(j)
+                    elif dados[j]<=media:
+                        break
+
+
+    return p_acima_media
 
 def definir_nome_distribuicao(dist):
     match dist.name:
@@ -147,3 +168,77 @@ def definir_nome_distribuicao(dist):
                 modelo = "Triangular"
 
     return modelo
+
+def retornar_distribuição(nome):
+    if nome == "Normal":
+        return stats.norm
+    if nome == "Logarítmica normal":
+        return stats.lognorm
+    if nome == "Exponencial":
+        return stats.expon
+    if nome == "Gamma":
+        return stats.gamma
+    if nome == "Weibull mínimo":
+        return stats.weibull_min
+    if nome == "Weibull máximo":
+        return stats.weibull_max
+    if nome == "Pareto":
+        return stats.pareto
+    if nome == "Beta":
+        return stats.beta
+    if nome == "Triangular":
+        return stats.triang
+
+def filtrar_acima_da_media(dados, media, coluna):
+    dados["flag"] = False
+    for i in range(dados.index[0], dados.shape[0] - 6):
+        if dados.iloc[i][coluna] > media:
+            flag = True
+            for dado in dados.iloc[i:i+7][coluna]:
+                if dado<=media: flag=False
+            if flag==True: 
+                for j in range(i, dados.shape[0]):
+                    if dados.iloc[j][coluna]>media:
+                        dados.at[j, "flag"] = True
+                        # dados.iloc[j][coluna] = 0
+                        # print(dados.iloc[j][coluna])
+                    elif dados.iloc[j][coluna]<=media:
+                        break
+    filtro = (dados["flag"] == True)
+    dados = dados[filtro]
+
+    return dados
+
+def filtrar_abaixo_da_media(dados, media, coluna):
+    dados["flag"] = False
+    for i in range(dados.index[0], dados.shape[0] - 6):
+        if dados.iloc[i][coluna] < media:
+            flag = True
+            for dado in dados.iloc[i:i+7][coluna]:
+                if dado>=media: flag=False
+            if flag==True: 
+                for j in range(i, dados.shape[0]):
+                    if dados.iloc[j][coluna]<media:
+                        dados.at[j, "flag"] = True
+                    elif dados.iloc[j][coluna]>=media:
+                        break
+    filtro = (dados["flag"] == True)
+    dados = dados[filtro]
+
+    return dados
+
+def identificar_pontos(dados, p80inf, p80sup):
+    dados["red_dot"] = False
+    coluna = dados.columns[2]
+
+    media, mediana, desvio_padrao = calcular_stats(dados[coluna])
+    # print(media)
+    pontos_acima = dados[dados[coluna] > p80sup]
+    pontos_abaixo = dados[dados[coluna] < p80inf]
+    consecutivos_acima = filtrar_acima_da_media(dados, media, coluna)
+    consecutivos_abaixo = filtrar_abaixo_da_media(dados, media, coluna)
+    print(consecutivos_abaixo)
+
+    pontos = pd.concat([pontos_acima, pontos_abaixo, consecutivos_abaixo, consecutivos_acima])
+
+    return pontos

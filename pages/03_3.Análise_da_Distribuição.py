@@ -5,11 +5,11 @@ import pprint
 
 from functions import *
 
-st.set_page_config(page_title="Testes de Distribuição", layout="wide")
+st.set_page_config(page_title="Testes de Distribuição", layout="wide", page_icon=":mountain:")
 
 st.title("Testes de distribuição")
 
-dado_selecionado = st.selectbox(label="Selecionar o dado", options=os.listdir("data"))
+dado_selecionado = st.selectbox(label="Selecionar o dado", options=os.listdir("data"), placeholder="Selecionar o dado")
 
 simular = st.button(label="Simular")
 
@@ -47,9 +47,3 @@ if simular:
             plt.title(f"Comparação: dados importados X dados gerados pela distribuição ({coluna_especifica})")
             plt.legend()
             st.pyplot(fig)
-
-    with st.expander("Mais informações (Passo a passo)"):
-        dists = [definir_nome_distribuicao(dist) for dist in todas_dist]
-             
-        st.markdown(f'<div style="text-align: justify;"> Este módulo serve para indicar qual a distribuição mais parecida com os dados selecionados. São testadas as seguintes distribuições:<br><br>{dists}<br><br>Para cada distribuição, é calculado o erro quadrático médio (SSE) para determinar qual a distribuição mais parecida com os dados selecionados. A distribuição que obtiver o menor SSE, será indicado pelo algoritmo como a distribuição recomendada. Após esse processo, a distribuição recomendada será utilizada para gerar dados amostrais semelhantes aos dados selecionados. No final, o resultado deste processo é exibido na tela, permitindo a comparação entre os dados gerados pela distribuição recomendada com os dados selecionados. Esta distribuição será utilizada na Simulação de Monte Carlo para geração de dados com base nos parâmetros determinados pelo usuário. </div>', unsafe_allow_html=True)
-        

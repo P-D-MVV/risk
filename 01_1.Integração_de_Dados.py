@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd 
-st.set_page_config(page_title="Integração de Dados", layout="wide")
+st.set_page_config(page_title="Integração de Dados", layout="wide", page_icon=":newspaper:")
 
 st.title("Integração de Dados do MINE Risk")
 
@@ -24,6 +24,7 @@ if uploaded:
 
             dados[coluna_selecionada] = pd.to_numeric(dados[coluna_selecionada], errors="coerce")
             dados = dados.dropna()
+            dados = dados.sort_values(by="Data")
 
             dados.to_csv(f"data/{coluna_selecionada}.csv", header=True)
             st.success("Dados salvos")

@@ -228,16 +228,18 @@ def filtrar_abaixo_da_media(dados, media, coluna):
     return dados
 
 def identificar_pontos(dados, p80inf, p80sup):
-    dados["red_dot"] = False
     coluna = dados.columns[2]
 
     media, mediana, desvio_padrao = calcular_stats(dados[coluna])
-    # print(media)
     pontos_acima = dados[dados[coluna] > p80sup]
     pontos_abaixo = dados[dados[coluna] < p80inf]
-    consecutivos_acima = filtrar_acima_da_media(dados, media, coluna)
-    consecutivos_abaixo = filtrar_abaixo_da_media(dados, media, coluna)
-    print(consecutivos_abaixo)
+
+    filtro = (dados[coluna] <= p80sup) & (dados[coluna] >= p80inf)
+    dados_dentro_p80 = dados[filtro]
+
+    consecutivos_acima = filtrar_acima_da_media(dados_dentro_p80, media, coluna)
+    consecutivos_abaixo = filtrar_abaixo_da_media(dados_dentro_p80, media, coluna)
+    # print(consecutivos_abaixo)
 
     pontos = pd.concat([pontos_acima, pontos_abaixo, consecutivos_abaixo, consecutivos_acima])
 

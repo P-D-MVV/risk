@@ -39,8 +39,8 @@ elif dados_disponiveis:
     media, mediana, desvio = calcular_stats(dados[nome_dado])
     lsc = media + 3*desvio
     lic = media - 3*desvio
-    lsc = 20500
-    lic = 18000
+    # lsc = 20500
+    # lic = 18000
 
     # plt.axhline(lsc, color="red", linestyle="--", label=f"{lsc:.2f} LSC")
     # plt.axhline(media, color="orange", linestyle="--", label=f"{media:.2f} Média")

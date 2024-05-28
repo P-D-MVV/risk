@@ -70,7 +70,7 @@ elif dados_disponiveis:
 
     layout = go.Layout(
         autosize=True,
-        width=900
+        width=1000
     )
 
     fig = go.Figure(layout=layout)
@@ -103,4 +103,4 @@ elif dados_disponiveis:
         )
     )
 
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)

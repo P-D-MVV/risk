@@ -191,6 +191,7 @@ def retornar_distribuição(nome):
 
 def filtrar_acima_da_media(dados, media, coluna):
     dados["flag"] = False
+    dados.reset_index(drop=True, inplace=True)
     for i in range(dados.index[0], dados.shape[0] - 6):
         if dados.iloc[i][coluna] > media:
             flag = True
@@ -227,10 +228,11 @@ def filtrar_abaixo_da_media(dados, media, coluna):
 
     return dados
 
-def identificar_pontos(dados, p80inf, p80sup):
+def identificar_pontos(dados, p80inf, p80sup, media):
     coluna = dados.columns[2]
+    # print(dados)
 
-    media, mediana, desvio_padrao = calcular_stats(dados[coluna])
+    # media, mediana, desvio_padrao = calcular_stats(dados[coluna])
     pontos_acima = dados[dados[coluna] > p80sup]
     pontos_abaixo = dados[dados[coluna] < p80inf]
 
@@ -242,5 +244,5 @@ def identificar_pontos(dados, p80inf, p80sup):
     # print(consecutivos_abaixo)
 
     pontos = pd.concat([pontos_acima, pontos_abaixo, consecutivos_abaixo, consecutivos_acima])
-
+    print(pontos)
     return pontos

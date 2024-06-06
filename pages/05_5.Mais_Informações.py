@@ -1,8 +1,18 @@
 import streamlit as st
-
+from db.connection import consultar_contador
 
 st.set_page_config(page_title="Mais Informações", layout="wide", page_icon=":information_source:")
 
+acessos, simulador = consultar_contador()
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    with st.container(border=True):
+        st.metric("Acessos aos Mine RISK", acessos)
+with col2:
+    with st.container(border=True):
+        st.metric("Simulações no Mine RISK", simulador)
 
 with st.expander("Análise de Distribuição"):
     dists = ['Normal', 'Logarítmica normal', 'Exponencial', 'Gamma', 'Weibull mínimo', 'Weibull máximo', 'Pareto', 'Beta', 'Triangular']

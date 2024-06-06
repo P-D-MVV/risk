@@ -6,6 +6,7 @@ import streamlit_vertical_slider as svs
 import matplotlib.pyplot as plt
 import seaborn as sns
 import io
+from db.connection import incrementar_simulador
 from pyxlsb import open_workbook as open_xlsb
 
 from datetime import datetime
@@ -118,6 +119,7 @@ if dado_selecionado:
         submit = st.button("Simular")
 
         if submit:
+            incrementar_simulador()
             st.session_state.melhor_distribuicao = melhor_dist
             st.session_state.melhor_parametro = melhor_param
 

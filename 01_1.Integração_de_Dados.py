@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd 
+from db.connection import incrementar_acesso
+
 st.set_page_config(page_title="Integração de Dados", layout="wide", page_icon=":newspaper:")
 
 st.title("Integração de Dados do MINE Risk")
+
+incrementar_acesso()
 
 uploaded = st.file_uploader("Faça upload dos dados", accept_multiple_files=False)
 

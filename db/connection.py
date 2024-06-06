@@ -8,7 +8,7 @@ PASSWORD = 'bX}9Kfx634UZ2'
 def conectar():
     # connectionString = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Trusted_Connection=yes;'
     # conn = pyodbc.connect(connectionString)
-    conn = pyodbc.connect(f'DRIVER={{SQL Server}};SERVER={SERVER};PORT=1433;DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD}')
+    conn = pyodbc.connect(f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER};PORT=1433;DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD}')
 
     return conn
 

@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pprint
+from PIL import Image
 
 import plotly.express as px 
 import plotly.graph_objects as go
@@ -11,22 +12,36 @@ from functions import *
 
 st.set_page_config(page_title="MINE Risk", layout="wide", page_icon=":chart_with_downwards_trend:")
 
+col1, col2, col3, col4 = st.columns([1,1,1,1])
+
+with col1:
+    image = Image.open("assets/Imagem3.png")
+    new_image = image.resize((125, 50))
+    st.image(new_image)
+with col2:
+    image = Image.open("assets/Imagem1 1.jpg")
+    new_image = image.resize((150, 50))
+    st.image(new_image)
+with col3:
+    image = Image.open("assets/Imagem2.png")
+    new_image = image.resize((125, 50))
+    st.image(new_image)
+with col4:
+    image = Image.open("assets/Imagem4.png")
+    new_image = image.resize((125, 50))
+    st.image(new_image)
+
 st.title("MINE Risk")
 
 if "data_inicial" not in st.session_state:
     st.session_state.data_inicial = None
 if "data_final" not in st.session_state:
     st.session_state.data_final = None
-
-dados_disponiveis = os.listdir("data")
-
-if not dados_disponiveis:
-    st.write("""
-             Nenhum dado disponível. 
-             Por favor, insira os dados na página Integração de Dados""")
-elif dados_disponiveis:
-    dado_escolhido = st.selectbox(label="Selecionar dado", options=dados_disponiveis)
-    dados = pd.read_csv(f"data/{dado_escolhido}")
+if "df" in st.session_state:
+    dados_disponiveis = st.session_state.df
+    print(dados_disponiveis)
+    # dado_escolhido = st.selectbox(label="Selecionar dado", options=dados_disponiveis)
+    dados = dados_disponiveis
     menor_data, maior_data = min(dados["Data"]), max(dados["Data"])
     menor_data, maior_data = pd.to_datetime(menor_data), pd.to_datetime(maior_data)
     data_ini = st.date_input(label="Escolha a data inicial", value=menor_data, min_value=menor_data, max_value=maior_data)
@@ -37,7 +52,7 @@ elif dados_disponiveis:
     filtragem = (str(data_ini) <= dados["Data"]) & (dados["Data"] <= str(data_fim))
     dados = dados[filtragem]
     # dados_data = dados[dados.columns.values[1]]
-    nome_dado = dado_escolhido.split(".")[0]
+    nome_dado = dados.columns[1]
     # dados = dados[nome_dado]
 
     fig2 = plt.figure(figsize=(12, 6))
@@ -84,3 +99,9 @@ elif dados_disponiveis:
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+
+if "df" not in st.session_state:
+    st.write("""
+             Nenhum dado disponível. 
+             Por favor, insira os dados na página Integração de Dados""")

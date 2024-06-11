@@ -2,13 +2,18 @@ import streamlit as st
 import pandas as pd 
 from db.connection import incrementar_acesso
 from PIL import Image
+from data.dfHandler import *
 
 st.set_page_config(page_title="Integração de Dados", layout="wide", page_icon=":newspaper:")
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    incrementar_acesso()
 
 col1, col2, col3, col4 = st.columns([1,1,1,1])
 
 with col1:
-    image = Image.open("assets/Imagem2.png")
+    image = Image.open("assets/Imagem3.png")
     new_image = image.resize((125, 50))
     st.image(new_image)
 with col2:
@@ -16,7 +21,7 @@ with col2:
     new_image = image.resize((150, 50))
     st.image(new_image)
 with col3:
-    image = Image.open("assets/Imagem3.png")
+    image = Image.open("assets/Imagem2.png")
     new_image = image.resize((125, 50))
     st.image(new_image)
 with col4:
@@ -25,8 +30,6 @@ with col4:
     st.image(new_image)
 
 st.title("Integração de Dados do MINE Risk")
-
-incrementar_acesso()
 
 uploaded = st.file_uploader("Faça upload dos dados", accept_multiple_files=False)
 
@@ -52,9 +55,10 @@ if uploaded:
             dados[nome_arquivo] = dados[coluna_selecionada]
             dados = dados.loc[:, ["Data", nome_arquivo]]
             dados = dados.sort_values(by="Data")
-            print(f"data/{coluna_selecionada}")
 
-            dados.to_csv(f"""data/{nome_arquivo}.csv""", header=True)
+            df = load_csv(dados)
+            st.session_state["df"] = df
+
             st.success("Dados salvos")
         except:
             st.error("Não foi possível salvar os dados ")

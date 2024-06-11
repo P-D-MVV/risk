@@ -11,6 +11,7 @@ from pyxlsb import open_workbook as open_xlsb
 
 from datetime import datetime
 from io import BytesIO
+from PIL import Image
 
 from functions import *
 
@@ -25,13 +26,36 @@ if "simulacao_salva" not in st.session_state:
 
 st.set_page_config(page_title="Simulação de Monte Carlo", layout="wide", page_icon=":bar_chart:")
 
+col1, col2, col3, col4 = st.columns([1,1,1,1])
+
+with col1:
+    image = Image.open("assets/Imagem3.png")
+    new_image = image.resize((125, 50))
+    st.image(new_image)
+with col2:
+    image = Image.open("assets/Imagem1 1.jpg")
+    new_image = image.resize((150, 50))
+    st.image(new_image)
+with col3:
+    image = Image.open("assets/Imagem2.png")
+    new_image = image.resize((125, 50))
+    st.image(new_image)
+with col4:
+    image = Image.open("assets/Imagem4.png")
+    new_image = image.resize((125, 50))
+    st.image(new_image)
+
 st.title("Simulação de Monte Carlo")
 
-dado_selecionado = st.selectbox(label="Selecionar o dado", options=os.listdir("data"), placeholder="Selecionar o dado")
+# dado_selecionado = st.selectbox(label="Selecionar o dado", options=os.listdir("data"), placeholder="Selecionar o dado")
+if "df" in st.session_state:
+    dado_selecionado = st.session_state.df
 
-if dado_selecionado:
-    dados = pd.read_csv(f"data/{dado_selecionado}")
-    nome_dado = dado_selecionado.split(".")[0]
+
+    # dados = pd.read_csv(f"data/{dado_selecionado}")
+    nome_dado = dado_selecionado.columns[1]
+    dados=dado_selecionado
+    print(dados)
     menor_data, maior_data = min(dados["Data"]), max(dados["Data"])
     menor_data, maior_data = pd.to_datetime(menor_data), pd.to_datetime(maior_data)
     data_ini = st.date_input(label="Escolha a data início", value=menor_data, min_value=menor_data, max_value=maior_data)
@@ -104,9 +128,10 @@ if dado_selecionado:
 
             if dados_pre and stats_pre:
                 dados = pd.DataFrame(pd.read_csv(dados_pre))
-                dados = dados[dados.columns[3]]
+                dados = dados[dados.columns[2]]
                 estatisticas = pd.DataFrame(pd.read_csv(stats_pre))
                 melhor_dist, melhor_param, todas_dist, todos_param = definir_melhor_distribuicao(dados)
+                print(todas_dist)
 
                 meta = estatisticas["Meta"][0]
                 n_sim = estatisticas["Numero de Simulacoes"][0]
@@ -114,73 +139,73 @@ if dado_selecionado:
                 tipo_calculo = estatisticas["Tipo de Calculo"][0]
                 distribution = estatisticas["Distribuicao"][0]
 
-                print(dados)
+                print(distribution)
 
-        submit = st.button("Simular")
+                submit = st.button("Simular")
 
-        if submit:
-            incrementar_simulador()
-            st.session_state.melhor_distribuicao = melhor_dist
-            st.session_state.melhor_parametro = melhor_param
+                if submit:
+                    incrementar_simulador()
+                    st.session_state.melhor_distribuicao = melhor_dist
+                    st.session_state.melhor_parametro = melhor_param
 
-            # media_sim, mediana_sim, desvio_sim, p80_inf_sim, p80_sup_sim, prob_meta_sim, resultados_sim = simular_monte_carlo(gerar_dados_amostrais(st.session_state.melhor_distribuicao, st.session_state.melhor_parametro), meta, n_sim, n_dias, tipo_calculo)
-            media_sim, mediana_sim, desvio_sim, p80_inf_sim, p80_sup_sim, prob_meta_sim, resultados_sim = simular_monte_carlo(gerar_dados_amostrais(retornar_distribuição(distribution), todos_param[todas_dist.index(retornar_distribuição(distribution))]), meta, n_sim, n_dias, tipo_calculo)
-            fig = plt.figure(figsize=(12, 6))
-            plt.hist(resultados_sim, bins=15, density=True, alpha=.6, color='green', label="Dados da simulação")
-            # plt.hist(dados, bins=15, density=True, alpha=.7, color="blue", label="Dados históricos")
-            plt.axvline(x=meta, color='red', linestyle='--', label=f'Target - {meta:.2f}')
-            plt.axvline(x=p80_inf_sim, color='blue', linestyle='--', label=f'C20 - {p80_inf_sim:.2f}')
-            plt.axvline(x=p80_sup_sim, color='blue', linestyle='--', label=f'C80 - {p80_sup_sim:.2f}')
-            plt.xlabel('Produção Total')
-            plt.ylabel('Densidade de Probabilidade')
-            plt.title(f'''Distribuição da Produção Total\nDado: {nome_dado}\nDistribuição: {definir_nome_distribuicao(retornar_distribuição(distribution))}''')
-            plt.legend()
+                    # media_sim, mediana_sim, desvio_sim, p80_inf_sim, p80_sup_sim, prob_meta_sim, resultados_sim = simular_monte_carlo(gerar_dados_amostrais(st.session_state.melhor_distribuicao, st.session_state.melhor_parametro), meta, n_sim, n_dias, tipo_calculo)
+                    media_sim, mediana_sim, desvio_sim, p80_inf_sim, p80_sup_sim, prob_meta_sim, resultados_sim = simular_monte_carlo(gerar_dados_amostrais(retornar_distribuição(distribution), todos_param[todas_dist.index(retornar_distribuição(distribution))]), meta, n_sim, n_dias, tipo_calculo)
+                    fig = plt.figure(figsize=(12, 6))
+                    plt.hist(resultados_sim, bins=15, density=True, alpha=.6, color='green', label="Dados da simulação")
+                    # plt.hist(dados, bins=15, density=True, alpha=.7, color="blue", label="Dados históricos")
+                    plt.axvline(x=meta, color='red', linestyle='--', label=f'Target - {meta:.2f}')
+                    plt.axvline(x=p80_inf_sim, color='blue', linestyle='--', label=f'C20 - {p80_inf_sim:.2f}')
+                    plt.axvline(x=p80_sup_sim, color='blue', linestyle='--', label=f'C80 - {p80_sup_sim:.2f}')
+                    plt.xlabel('Produção Total')
+                    plt.ylabel('Densidade de Probabilidade')
+                    plt.title(f'''Distribuição da Produção Total\nDado: {nome_dado}\nDistribuição: {definir_nome_distribuicao(retornar_distribuição(distribution))}''')
+                    plt.legend()
 
-            st.subheader("Estatísticas da simulação")
-            col6, col7, col8 = st.columns(3)
+                    st.subheader("Estatísticas da simulação")
+                    col6, col7, col8 = st.columns(3)
 
-            with col6:
-                with st.container(border=True):
-                    st.metric("Média", f"{media_sim:.2f}")
-                with st.container(border=True):
-                    st.metric("C20", f"{p80_inf_sim:.2f}")
-            with col7:
-                with st.container(border=True):
-                    st.metric("Mediana", f"{mediana_sim:.2f}")
-                with st.container(border=True):
-                    st.metric("C80", f"{p80_sup_sim:.2f}")
-            with col8:
-                with st.container(border=True):
-                    st.metric("Desvio Padrão", f"{desvio_sim:.2f}")
-                with st.container(border=True):
-                    st.metric("Prob. de atingir a meta", f"{prob_meta_sim:.2%}")
+                    with col6:
+                        with st.container(border=True):
+                            st.metric("Média", f"{media_sim:.2f}")
+                        with st.container(border=True):
+                            st.metric("C20", f"{p80_inf_sim:.2f}")
+                    with col7:
+                        with st.container(border=True):
+                            st.metric("Mediana", f"{mediana_sim:.2f}")
+                        with st.container(border=True):
+                            st.metric("C80", f"{p80_sup_sim:.2f}")
+                    with col8:
+                        with st.container(border=True):
+                            st.metric("Desvio Padrão", f"{desvio_sim:.2f}")
+                        with st.container(border=True):
+                            st.metric("Prob. de atingir a meta", f"{prob_meta_sim:.2%}")
 
-            st.pyplot(fig)
+                    st.pyplot(fig)
 
-            df = pd.DataFrame({
-                "Meta": meta,
-                "Numero de Simulacoes": n_sim,
-                "Numero de Dias": n_dias,
-                "Tipo de Calculo": tipo_calculo,
-                "Distribuicao": distribution,
-                "Data": [datetime.now()],
-                "Media": [media_sim],
-                "Mediana": [mediana_sim],
-                "C20": [p80_inf_sim],
-                "C80": [p80_sup_sim],
-                "Desvio Padrao": [desvio_sim],
-                "Probabilidade de atingir a meta": [prob_meta_sim*100]
-            })
+                    df = pd.DataFrame({
+                        "Meta": meta,
+                        "Numero de Simulacoes": n_sim,
+                        "Numero de Dias": n_dias,
+                        "Tipo de Calculo": tipo_calculo,
+                        "Distribuicao": distribution,
+                        "Data": [datetime.now()],
+                        "Media": [media_sim],
+                        "Mediana": [mediana_sim],
+                        "C20": [p80_inf_sim],
+                        "C80": [p80_sup_sim],
+                        "Desvio Padrao": [desvio_sim],
+                        "Probabilidade de atingir a meta": [prob_meta_sim*100]
+                    })
 
-            # buffer = io.BytesIO()
-            # with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-            #     df.to_excel(writer, sheet_name='Estatisticas')
-            #     writer.save()
+                    # buffer = io.BytesIO()
+                    # with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                    #     df.to_excel(writer, sheet_name='Estatisticas')
+                    #     writer.save()
 
-            dados_salvar = pd.DataFrame(dados_filtrados)
+                    dados_salvar = pd.DataFrame(dados_filtrados)
 
-            baixar_stats = st.download_button("Baixar estatísticas", data=df.to_csv(header=True).encode("utf-8"), file_name="Estatisticas da Simulacao.csv")
-            baixar_dados = st.download_button("Baixar dados", data=dados_salvar.to_csv(header=True).encode("utf-8"), file_name="Dados.csv")
-                # st.download_button("Salvar simulação", data=writer, file_name="Resultado Monte Carlo.csv")
+                    baixar_stats = st.download_button("Baixar estatísticas", data=df.to_csv(header=True).encode("utf-8"), file_name="Estatisticas da Simulacao.csv")
+                    baixar_dados = st.download_button("Baixar dados", data=dados_salvar.to_csv(header=True).encode("utf-8"), file_name="Dados.csv")
+                        # st.download_button("Salvar simulação", data=writer, file_name="Resultado Monte Carlo.csv")
 
 

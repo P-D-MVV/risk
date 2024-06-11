@@ -229,7 +229,8 @@ def filtrar_abaixo_da_media(dados, media, coluna):
     return dados
 
 def identificar_pontos(dados, p80inf, p80sup, media):
-    coluna = dados.columns[2]
+    # print(dados.columns)
+    coluna = dados.columns[1]
     # print(dados)
 
     # media, mediana, desvio_padrao = calcular_stats(dados[coluna])

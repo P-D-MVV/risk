@@ -62,10 +62,17 @@ if simular:
             with col3:
                 with st.container(border=True):    
                     st.metric("Desvio padrão amostral", f"{desvio_amostral:.2f}")
+            import plotly.graph_objects as go
 
-            fig = plt.figure(figsize=(12, 6))
-            fig_amostra = plt.hist(dados_amostrais, bins = 15, density=False, alpha=.6, color="green", label="Dados gerados pela distribuição")
-            fig_dados = plt.hist(dados, bins = 15, density=False, alpha=.6, color="blue", label="Dados importados")
-            plt.title(f"Comparação: dados importados X dados gerados pela distribuição")
-            plt.legend()
-            st.pyplot(fig)
+            fig = go.Figure()
+            fig.add_trace(go.Histogram(x=dados_amostrais, nbinsx=15, marker_color='green', opacity=0.6, name='Dados gerados pela distribuição'))
+            fig.add_trace(go.Histogram(x=dados, nbinsx=15, marker_color='blue', opacity=0.6, name='Dados importados'))
+            fig.update_layout(title='Comparação: dados importados X dados gerados pela distribuição', barmode='overlay')
+            fig.update_traces(opacity=0.6)
+            st.plotly_chart(fig, use_container_width=True)
+            # fig = plt.figure(figsize=(12, 6))
+            # fig_amostra = plt.hist(dados_amostrais, bins = 15, density=False, alpha=.6, color="green", label="Dados gerados pela distribuição")
+            # fig_dados = plt.hist(dados, bins = 15, density=False, alpha=.6, color="blue", label="Dados importados")
+            # plt.title(f"Comparação: dados importados X dados gerados pela distribuição")
+            # plt.legend()
+            # st.pyplot(fig)

@@ -37,6 +37,8 @@ if "data_inicial" not in st.session_state:
     st.session_state.data_inicial = None
 if "data_final" not in st.session_state:
     st.session_state.data_final = None
+if "df" not in st.session_state:
+    st.write("Insira dados para prosseguir")
 if "df" in st.session_state:
     dados_disponiveis = st.session_state.df
     print(dados_disponiveis)
@@ -50,6 +52,7 @@ if "df" in st.session_state:
     st.session_state.data_final = data_fim
     dados = dados.sort_values(by="Data")
     filtragem = (str(data_ini) <= dados["Data"]) & (dados["Data"] <= str(data_fim))
+    dados_s_filtro = dados.copy()
     dados = dados[filtragem]
     # dados_data = dados[dados.columns.values[1]]
     nome_dado = dados.columns[1]
@@ -62,7 +65,7 @@ if "df" in st.session_state:
     lic = media - 3*desvio
     
     if st.session_state.data_inicial and st.session_state.data_final:
-        print("r")
+        # print("r")
         layout = go.Layout(
             autosize=True,
             width=1000
@@ -100,8 +103,47 @@ if "df" in st.session_state:
 
         st.plotly_chart(fig, use_container_width=True)
 
+        
+        import ruptures as rpt
+        # n_samples, dim, sigma = len(dados_s_filtro[nome_dado]), 2, 4
+        # n_bkps = 4  # number of breakpoints
+        # signal, bkps = rpt.pw_constant(n_samples, dim, n_bkps, noise_std=sigma)
 
-if "df" not in st.session_state:
-    st.write("""
-             Nenhum dado disponível. 
-             Por favor, insira os dados na página Integração de Dados""")
+        # # detection
+        # algo = rpt.Pelt(model="rbf").fit(dados_s_filtro[nome_dado].values.reshape(-1, 1))
+        # result = algo.predict(pen=10)
+
+        # # display
+        # rpt.display(signal, bkps, result)
+        # # plt
+        # st.pyplot(plt)
+        # def detect_ruptures(data):
+        #     algo = rpt.Pelt(model="rbf").fit(data)
+        #     result = algo.predict(pen=10)
+        #     return result
+        
+        # rupture_points = detect_ruptures(dados_s_filtro[nome_dado].values.reshape(-1, 1))
+
+        
+        # plt.figure(figsize=(10, 6))
+        # plt.plot(dados_s_filtro["Data"], dados_s_filtro[nome_dado], label="Dados")
+        # for point in rupture_points:
+        #     try:
+        #         plt.axvline(x=dados_s_filtro["Data"].iloc[point], color='r', linestyle='--', linewidth=2, label="Ruptura")
+        #     except:
+        #         pass
+        # plt.xlabel("Data")
+        # plt.ylabel("Valor")
+        # plt.title("Detecção de Rupturas nos Dados")
+        # plt.legend()
+        # plt.grid(True)
+        # plt.tight_layout()
+
+        # # Mostrar o gráfico no Streamlit
+        # st.pyplot(plt)
+
+
+# if "df" not in st.session_state:
+#     st.write("""
+#              Nenhum dado disponível. 
+#              Por favor, insira os dados na página Integração de Dados""")

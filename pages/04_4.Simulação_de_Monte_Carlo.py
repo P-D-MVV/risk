@@ -8,6 +8,7 @@ import seaborn as sns
 import io
 from db.connection import incrementar_simulador
 from pyxlsb import open_workbook as open_xlsb
+import plotly.graph_objects as go
 
 from datetime import datetime
 from io import BytesIO
@@ -106,10 +107,13 @@ if "df" in st.session_state:
             st.session_state.valor_agrupamento_dados = valor_agrupamento
 
         with col4:
-            fig = plt.figure(figsize=(16, 8))
-            fig_dados = plt.hist(dados, bins = st.session_state.valor_agrupamento_dados, density=False, alpha=.6, color="blue", label="Histograma dos dados importados")
-            plt.title(f"Histograma dos dados importados ({nome_dado})")
-            st.pyplot(fig)
+            # fig = plt.figure(figsize=(16, 8))
+            # fig_dados = plt.hist(dados, bins = st.session_state.valor_agrupamento_dados, density=False, alpha=.6, color="blue", label="Histograma dos dados importados")
+            # plt.title(f"Histograma dos dados importados ({nome_dado})")
+            # st.pyplot(fig)
+            fig = go.Figure(data=[go.Histogram(x=dados, nbinsx=st.session_state.valor_agrupamento_dados, marker_color='blue', opacity=0.6, name='Histograma dos dados importados')])
+            fig.update_layout(title=f'Histograma dos dados importados ({nome_dado})')
+            st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("Formulário de simulação", expanded=True):
         tipo_de_importacao = st.selectbox(label="Escolha o tipo de importação", options=["Preencher parâmetros", "Importar"])
@@ -151,16 +155,40 @@ if "df" in st.session_state:
 
             # media_sim, mediana_sim, desvio_sim, p80_inf_sim, p80_sup_sim, prob_meta_sim, resultados_sim = simular_monte_carlo(gerar_dados_amostrais(st.session_state.melhor_distribuicao, st.session_state.melhor_parametro), meta, n_sim, n_dias, tipo_calculo)
             media_sim, mediana_sim, desvio_sim, p80_inf_sim, p80_sup_sim, prob_meta_sim, resultados_sim = simular_monte_carlo(gerar_dados_amostrais(retornar_distribuição(distribution), todos_param[todas_dist.index(retornar_distribuição(distribution))]), meta, n_sim, n_dias, tipo_calculo)
-            fig = plt.figure(figsize=(12, 6))
-            plt.hist(resultados_sim, bins=15, density=True, alpha=.6, color='green', label="Dados da simulação")
-            # plt.hist(dados, bins=15, density=True, alpha=.7, color="blue", label="Dados históricos")
-            plt.axvline(x=meta, color='red', linestyle='--', label=f'Target - {meta:.2f}')
-            plt.axvline(x=p80_inf_sim, color='blue', linestyle='--', label=f'C20 - {p80_inf_sim:.2f}')
-            plt.axvline(x=p80_sup_sim, color='blue', linestyle='--', label=f'C80 - {p80_sup_sim:.2f}')
-            plt.xlabel('Produção Total')
-            plt.ylabel('Densidade de Probabilidade')
-            plt.title(f'''Distribuição da Produção Total\nDado: {nome_dado}\nDistribuição: {definir_nome_distribuicao(retornar_distribuição(distribution))}''')
-            plt.legend()
+            # fig = plt.figure(figsize=(12, 6))
+            # plt.hist(resultados_sim, bins=15, density=True, alpha=.6, color='green', label="Dados da simulação")
+            # # plt.hist(dados, bins=15, density=True, alpha=.7, color="blue", label="Dados históricos")
+            # plt.axvline(x=meta, color='red', linestyle='--', label=f'Target - {meta:.2f}')
+            # plt.axvline(x=p80_inf_sim, color='blue', linestyle='--', label=f'C20 - {p80_inf_sim:.2f}')
+            # plt.axvline(x=p80_sup_sim, color='blue', linestyle='--', label=f'C80 - {p80_sup_sim:.2f}')
+            # plt.xlabel('Produção Total')
+            # plt.ylabel('Densidade de Probabilidade')
+            # plt.title(f'''Distribuição da Produção Total\nDado: {nome_dado}\nDistribuição: {definir_nome_distribuicao(retornar_distribuição(distribution))}''')
+            # plt.legend()
+
+            fig = go.Figure()
+            fig.add_trace(
+                go.Histogram(x=resultados_sim, marker_color="green", name=f"Dados de {nome_dado}")
+            )
+            fig.update_layout(
+                title=f"""
+                    Distribuição de Produção Total\n
+                    Dado: {nome_dado}\n
+                    Distribuição: {definir_nome_distribuicao(retornar_distribuição(distribution))} 
+                        """,
+                xaxis_title="Produção Total",
+                yaxis_title="Densidade",
+                autosize=True, width=1000
+                )
+            fig.add_vline(x=meta, line_color="red", name="meta")
+            fig.add_vline(x=p80_inf_sim, line_color="blue")
+            fig.add_vline(x=p80_sup_sim, line_color="blue")
+    
+
+            # fig.add_trace(
+            #     go.Scatter(x=[meta], y=[50], mode="lines", name="Meta")
+            # )
+
 
             st.subheader("Estatísticas da simulação")
             col6, col7, col8 = st.columns(3)
@@ -181,7 +209,30 @@ if "df" in st.session_state:
                 with st.container(border=True):
                     st.metric("Prob. de atingir a meta", f"{prob_meta_sim:.2%}")
 
-            st.pyplot(fig)
+            # st.pyplot(fig)
+            st.plotly_chart(fig, use_container_width=True)
+
+            # Curva de probs
+            resultados_ord = np.sort(resultados_sim)
+
+            prob_acumulada = np.arange(1, len(resultados_ord) + 1) / len(resultados_ord)
+
+            passo = int(len(resultados_ord) / 100)
+            resultados_exibicao = resultados_ord[::passo]
+            prob_acumulada_exibicao = prob_acumulada[::passo]
+
+            granularidade_y = 100  # Ajuste conforme necessário
+            prob_acumulada_exibicao = np.linspace(0, 1, granularidade_y)
+
+            # Plotar a distribuição de probabilidade acumulada com plotly
+            fig2 = go.Figure(data=go.Scatter(x=resultados_exibicao, y=prob_acumulada_exibicao, mode='markers', marker=dict(symbol='circle', size=3.5)))
+            fig2.update_layout(title='Distribuição de Probabilidade Acumulada',
+                                        xaxis_title='Valores',
+                            yaxis_title='Probabilidade Acumulada')
+            
+            st.plotly_chart(fig2, use_container_width=True)
+
+            # ===================
 
             df = pd.DataFrame({
                 "Meta": meta,

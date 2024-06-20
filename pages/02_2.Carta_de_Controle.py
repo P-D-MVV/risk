@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pprint
 from PIL import Image
+import random
 
 import plotly.express as px 
 import plotly.graph_objects as go
@@ -41,7 +42,7 @@ if "df" not in st.session_state:
     st.write("Insira dados para prosseguir")
 if "df" in st.session_state:
     dados_disponiveis = st.session_state.df
-    print(dados_disponiveis)
+    # print(dados_disponiveis)
     # dado_escolhido = st.selectbox(label="Selecionar dado", options=dados_disponiveis)
     dados = dados_disponiveis
     menor_data, maior_data = min(dados["Data"]), max(dados["Data"])
@@ -91,7 +92,7 @@ if "df" in st.session_state:
 
         fig.add_trace(
             go.Scatter(
-                x=filtered_data["Data"], y=[media] * len(filtered_data["Data"]), mode="lines", name="Média", line=dict(color="rgb(255, 255, 0)")
+                x=filtered_data["Data"], y=[media] * len(filtered_data["Data"]), mode="lines", name="Média global", line=dict(color="rgb(255, 255, 0)")
             )
         )
 
@@ -101,49 +102,39 @@ if "df" in st.session_state:
             )
         )
 
-        st.plotly_chart(fig, use_container_width=True)
-
-        
         import ruptures as rpt
-        # n_samples, dim, sigma = len(dados_s_filtro[nome_dado]), 2, 4
-        # n_bkps = 4  # number of breakpoints
-        # signal, bkps = rpt.pw_constant(n_samples, dim, n_bkps, noise_std=sigma)
+        n_samples, dim, sigma = len(dados_s_filtro[nome_dado]), 2, 4
+        n_bkps = 4  # number of breakpoints
+        signal, bkps = rpt.pw_constant(n_samples, dim, n_bkps, noise_std=sigma)
 
-        # # detection
-        # algo = rpt.Pelt(model="rbf").fit(dados_s_filtro[nome_dado].values.reshape(-1, 1))
-        # result = algo.predict(pen=10)
+        # detection
+        algo = rpt.Pelt(model="rbf").fit(dados_s_filtro[nome_dado].values.reshape(-1, 1))
+        result = algo.predict(pen=10)
 
-        # # display
-        # rpt.display(signal, bkps, result)
-        # # plt
-        # st.pyplot(plt)
-        # def detect_ruptures(data):
-        #     algo = rpt.Pelt(model="rbf").fit(data)
-        #     result = algo.predict(pen=10)
-        #     return result
-        
-        # rupture_points = detect_ruptures(dados_s_filtro[nome_dado].values.reshape(-1, 1))
+        for bkp in bkps:
+            try:
+                fig.add_vline(x=filtered_data["Data"][bkp], line_width=1.2, line_color="brown")
+            except: 
+                pass
 
-        
-        # plt.figure(figsize=(10, 6))
-        # plt.plot(dados_s_filtro["Data"], dados_s_filtro[nome_dado], label="Dados")
-        # for point in rupture_points:
-        #     try:
-        #         plt.axvline(x=dados_s_filtro["Data"].iloc[point], color='r', linestyle='--', linewidth=2, label="Ruptura")
-        #     except:
-        #         pass
-        # plt.xlabel("Data")
-        # plt.ylabel("Valor")
-        # plt.title("Detecção de Rupturas nos Dados")
-        # plt.legend()
-        # plt.grid(True)
-        # plt.tight_layout()
+        bkps.insert(0, 0)
 
-        # # Mostrar o gráfico no Streamlit
-        # st.pyplot(plt)
+        # for i in range(len(bkps)):
+        #     if i > 3:
+        #         bkps[i] = bkps[i]-1
 
+        for i in range(len(bkps)-1):
+            i0 = bkps[i]
+            i1 = bkps[i+1] - 1  # Ajuste para usar corretamente o índice final
+            if i > 1:
+                i1 -= 2
+            if i > 2:
+                i0 -= 2
+            if i> 3:
+                i1 -= 1
+            media_per = np.mean(filtered_data[nome_dado][i0:i1+1])  # Calcular a média corretamente
+            fig.add_trace(
+                go.Scatter(x=filtered_data["Data"][i0:i1+2], y=[media_per] * len(filtered_data["Data"][i0:i1+2]), mode="lines", name=f"Média do período {i+1}", marker=dict(color="rgb(0, 0, 153)"))
+            )
 
-# if "df" not in st.session_state:
-#     st.write("""
-#              Nenhum dado disponível. 
-#              Por favor, insira os dados na página Integração de Dados""")
+        st.plotly_chart(fig, use_container_width=True)

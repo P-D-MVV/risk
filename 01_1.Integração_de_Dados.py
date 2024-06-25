@@ -62,3 +62,4 @@ if uploaded:
             st.success("Dados salvos")
         except:
             st.error("Não foi possível salvar os dados ")
+
